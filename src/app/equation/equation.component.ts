@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MathValidators } from '../validators/math-validators';
-import { delay, filter } from 'rxjs/operators';
+import { delay, filter, scan } from 'rxjs/operators';
 
 @Component({
   selector: 'app-equation',
@@ -28,8 +28,6 @@ export class EquationComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    const startTime = new Date();
-    let numberSolved = 0
 
     this.mathForm = new FormGroup({
       firstValue: new FormControl(this.randomNumber),
@@ -37,24 +35,33 @@ export class EquationComponent implements OnInit {
       answer: new FormControl(''),
     }, [MathValidators.addition('answer', 'firstValue', 'secondValue')]);
 
-    this.mathForm.statusChanges.pipe(
-      delay(300),
-      filter(value => value === 'VALID')
-      ).subscribe(() => {
-      
-      numberSolved++
-      this.secondsPerSolution = (timeElapsedInMillSecs() / numberSolved) / 1000
+    this.mathForm.statusChanges
+      .pipe(
+        delay(300),
+        filter(value => value === 'VALID'),
+        scan(
+          (acc, _) => {
+            return {
+              numberSolved: acc.numberSolved + 1,
+              startTime: acc.startTime
+            }
+          
+          }, { numberSolved: 0, startTime: new Date() }
+        )
+      ).subscribe(
+        ({ numberSolved, startTime }) => {
 
-      this.mathForm.setValue({ 
-        firstValue: this.randomNumber,
-        secondValue: this.randomNumber,
-        answer: ''
-      })
-    })
+          const timeElapsedInMillSecs = new Date().getTime() - startTime.getTime()
 
-    const timeElapsedInMillSecs = () => {
-      return new Date().getTime() - startTime.getTime()
-    }
+          this.secondsPerSolution = (timeElapsedInMillSecs / numberSolved) / 1000
+
+          this.mathForm.setValue({
+            firstValue: this.randomNumber,
+            secondValue: this.randomNumber,
+            answer: ''
+          })
+
+        })
   }
 
 }
