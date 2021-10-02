@@ -1,0 +1,15 @@
+<form [formGroup]="mathForm">
+  {{ firstValue }} + {{ secondValue }} = 
+  <input type="number" formControlName="answer">
+</form>
+
+<hr/>
+<div>
+  form is valid {{ mathForm.valid }}
+</div>
+<div>
+  form values: {{ mathForm.value | json }}
+</div>
+<div>
+  form errors: {{ mathForm.errors | json }}
+</div>
