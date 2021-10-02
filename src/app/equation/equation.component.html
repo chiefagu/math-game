@@ -2,7 +2,7 @@
   {{ firstValue }} + {{ secondValue }} = 
   <input type="number" formControlName="answer">
 </form>
-
+{{ secondsPerSolution | number : '1.1-3' }}
 <hr/>
 <div>
   form is valid {{ mathForm.valid }}
